@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 # one is detected as "AppleClang".
 cmake_policy(SET CMP0010 NEW)
 cmake_policy(SET CMP0025 NEW)
+set(CMAKE_OSX_ARCHITECTURES "arm64")
 
 # Enables CMake to set LTO on compilers other than Intel.
 cmake_policy(SET CMP0069 NEW)
@@ -53,6 +54,8 @@ set(CMAKE_C_STANDARD
 
 # ---[ Utils
 include(cmake/public/utils.cmake)
+
+string(APPEND CMAKE_CXX_FLAGS " -D_GLIBCXX_USE_CX11_ABI=1")
 
 # --- [ Check that minimal gcc version is 9.3+
 if(CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.3)
@@ -130,7 +133,7 @@ if(APPLE)
   set(CMAKE_MACOSX_RPATH ON)
   if(NOT IOS)
     # Determine if we can link against MPSGraph
-    set(MPS_FOUND OFF)
+    set(MPS_FOUND ON)
     execute_process(
       COMMAND bash -c "xcrun --sdk macosx --show-sdk-version"
       RESULT_VARIABLE _exit_code
@@ -178,7 +181,7 @@ if(APPLE)
   endif()
 endif()
 
-set(CPU_AARCH64 OFF)
+set(CPU_AARCH64 ON)
 set(CPU_INTEL OFF)
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "(AMD64|x86_64)")
@@ -206,13 +209,14 @@ endif()
 # also add it to cmake/Summary.cmake so that the summary prints out the option
 # values.
 include(CMakeDependentOption)
+option(SINGLETHREADED, ON)
 option(ATEN_NO_TEST "Do not build ATen test binaries" OFF)
 option(BUILD_BINARY "Build C++ binaries" OFF)
 option(BUILD_CUSTOM_PROTOBUF
        "Build and use Caffe2's own protobuf under third_party" ON)
-option(BUILD_PYTHON "Build Python binaries" ON)
+option(BUILD_PYTHON "Build Python binaries" OFF)
 option(BUILD_LITE_INTERPRETER "Master flag to build Lite Interpreter" OFF)
-option(BUILD_SHARED_LIBS "Build libcaffe2.so" ON)
+option(BUILD_SHARED_LIBS "Build libcaffe2.so" OFF)
 cmake_dependent_option(
   CAFFE2_LINK_LOCAL_PROTOBUF "If set, build protobuf inside libcaffe2.so." ON
   "BUILD_SHARED_LIBS AND BUILD_CUSTOM_PROTOBUF" OFF)
@@ -240,14 +244,14 @@ option(USE_CPP_CODE_COVERAGE "Compile C/C++ with code coverage flags" OFF)
 option(USE_COLORIZE_OUTPUT "Colorize output during compilation" ON)
 option(USE_ASAN "Use Address+Undefined Sanitizers" OFF)
 option(USE_TSAN "Use Thread Sanitizer" OFF)
-option(USE_CUDA "Use CUDA" ON)
+option(USE_CUDA "Use CUDA" OFF)
 option(USE_XPU "Use XPU" ON)
 cmake_dependent_option(
   BUILD_LAZY_CUDA_LINALG "Build cuda linalg ops as separate library" ON
   "USE_CUDA AND LINUX AND BUILD_PYTHON" OFF)
 cmake_dependent_option(USE_ROCM "Use ROCm" ON "LINUX" OFF)
 option(CAFFE2_STATIC_LINK_CUDA "Statically link CUDA libraries" OFF)
-cmake_dependent_option(USE_CUDNN "Use cuDNN" ON "USE_CUDA" OFF)
+cmake_dependent_option(USE_CUDNN "Use cuDNN" OFF "USE_CUDA" OFF)
 cmake_dependent_option(USE_STATIC_CUDNN "Use cuDNN static libraries" OFF
                        "USE_CUDNN" OFF)
 cmake_dependent_option(USE_CUSPARSELT "Use cuSPARSELt" ON "USE_CUDA" OFF)
@@ -261,7 +265,7 @@ if(DEFINED ENV{TH_BINARY_BUILD})
 else()
   cmake_dependent_option(USE_CUFILE "Use cuFile" OFF "USE_CUDA AND NOT WIN32" OFF)
 endif()
-option(USE_FBGEMM "Use FBGEMM (quantized 8-bit server operators)" ON)
+option(USE_FBGEMM "Use FBGEMM (quantized 8-bit server operators)" OFF)
 option(USE_X86_SIMD_SORT "Use x86-simd-sort to accelerate sorting and topk for AVX2/AVX512" ON)
 option(USE_KINETO "Use Kineto profiling library" ON)
 option(USE_CUPTI_SO "Use CUPTI as a shared library" ON)
@@ -270,12 +274,27 @@ option(USE_GFLAGS "Use GFLAGS" OFF)
 option(USE_GLOG "Use GLOG" OFF)
 option(USE_LITE_PROTO "Use lite protobuf instead of full." OFF)
 option(USE_MAGMA "Use MAGMA" ON)
-option(USE_PYTORCH_METAL "Use Metal for PyTorch iOS build" OFF)
-option(USE_PYTORCH_METAL_EXPORT "Export Metal models on MacOSX desktop" OFF)
+option(USE_PYTORCH_METAL "Use Metal for PyTorch iOS build" ON)
+option(USE_PYTORCH_METAL_EXPORT "Export Metal models on MacOSX desktop" ON)
+
 option(USE_NATIVE_ARCH "Use -march=native" OFF)
-cmake_dependent_option(USE_MPS "Use MPS for macOS build" ON "MPS_FOUND" OFF)
+# cmake_dependent_option(USE_MPS "Use MPS for macOS build" ON "MPS_FOUND" OFF)
+cmake_dependent_option(
+  USE_TBB "Use TBB" OFF
+  "USE_TBB" OFF)
+
+cmake_dependent_option(
+  USE_SYSTEM_TBB "Use system TBB" OFF
+  "USE_SYSTEM_TBB" OFF)
+
+cmake_dependent_option(
+  USE_MPS "Use MPS for mac build" OFF
+  "MPS_FOUND" OFF)
+
+
 cmake_dependent_option(USE_NCCL "Use NCCL" ON
                        "USE_CUDA OR USE_ROCM;UNIX;NOT APPLE" OFF)
+
 cmake_dependent_option(USE_RCCL "Use RCCL" ON USE_NCCL OFF)
 cmake_dependent_option(USE_STATIC_NCCL "Use static NCCL" OFF "USE_NCCL" OFF)
 cmake_dependent_option(USE_SYSTEM_NCCL "Use system-wide NCCL" OFF "USE_NCCL"
@@ -289,9 +308,9 @@ cmake_dependent_option(USE_NVRTC "Use NVRTC. Only available if USE_CUDA is on."
 option(USE_NUMPY "Use NumPy" ON)
 option(USE_OBSERVERS "Use observers module." OFF)
 option(USE_OPENCL "Use OpenCL" OFF)
-option(USE_OPENMP "Use OpenMP for parallel code" ON)
+option(USE_OPENMP "Use OpenMP for parallel code" OFF)
 option(USE_PRECOMPILED_HEADERS "Use pre-compiled headers to accelerate build."
-       OFF)
+       ON)
 
 option(USE_PROF "Use profiling" OFF)
 option(USE_PYTORCH_QNNPACK "Use ATen/QNNPACK (quantized 8-bit operators)" ON)
