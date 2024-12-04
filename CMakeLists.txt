@@ -278,7 +278,7 @@ option(USE_PYTORCH_METAL "Use Metal for PyTorch iOS build" ON)
 option(USE_PYTORCH_METAL_EXPORT "Export Metal models on MacOSX desktop" ON)
 
 option(USE_NATIVE_ARCH "Use -march=native" OFF)
-# cmake_dependent_option(USE_MPS "Use MPS for macOS build" ON "MPS_FOUND" OFF)
+cmake_dependent_option(USE_MPS "Use MPS for macOS build" ON "MPS_FOUND" OFF)
 cmake_dependent_option(
   USE_TBB "Use TBB" OFF
   "USE_TBB" OFF)
@@ -286,10 +286,6 @@ cmake_dependent_option(
 cmake_dependent_option(
   USE_SYSTEM_TBB "Use system TBB" OFF
   "USE_SYSTEM_TBB" OFF)
-
-cmake_dependent_option(
-  USE_MPS "Use MPS for mac build" ON
-  "MPS_FOUND" ON)
 
 
 cmake_dependent_option(USE_NCCL "Use NCCL" ON
