@@ -184,7 +184,7 @@ endif()
 set(CPU_AARCH64 ON)
 set(CPU_INTEL OFF)
 
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "(AMD64|x86_64)")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "(AMD64)")
   set(CPU_INTEL ON)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64)")
   set(CPU_AARCH64 ON)
@@ -247,7 +247,7 @@ option(USE_TSAN "Use Thread Sanitizer" OFF)
 option(USE_CUDA "Use CUDA" OFF)
 option(USE_XPU "Use XPU" ON)
 cmake_dependent_option(
-  BUILD_LAZY_CUDA_LINALG "Build cuda linalg ops as separate library" ON
+  BUILD_LAZY_CUDA_LINALG "Build cuda linalg ops as separate library" OFF
   "USE_CUDA AND LINUX AND BUILD_PYTHON" OFF)
 cmake_dependent_option(USE_ROCM "Use ROCm" ON "LINUX" OFF)
 option(CAFFE2_STATIC_LINK_CUDA "Statically link CUDA libraries" OFF)
@@ -288,8 +288,8 @@ cmake_dependent_option(
   "USE_SYSTEM_TBB" OFF)
 
 cmake_dependent_option(
-  USE_MPS "Use MPS for mac build" OFF
-  "MPS_FOUND" OFF)
+  USE_MPS "Use MPS for mac build" ON
+  "MPS_FOUND" ON)
 
 
 cmake_dependent_option(USE_NCCL "Use NCCL" ON
@@ -805,16 +805,16 @@ if(NOT CMAKE_BUILD_TYPE)
         FORCE)
 endif()
 
-# The below means we are cross compiling for arm64 or x86_64 on MacOSX
+# The below means we are cross compiling for arm64 on MacOSX
 if(NOT IOS
    AND CMAKE_SYSTEM_NAME STREQUAL "Darwin"
-   AND CMAKE_OSX_ARCHITECTURES MATCHES "^(x86_64|arm64)$")
+   AND CMAKE_OSX_ARCHITECTURES MATCHES "^(arm64)$")
   set(CROSS_COMPILING_MACOSX TRUE)
   # We need to compile a universal protoc to not fail protobuf build We set
   # CMAKE_TRY_COMPILE_TARGET_TYPE to STATIC_LIBRARY (vs executable) to succeed
   # the cmake compiler check for cross-compiling
   set(protoc_build_command
-      "./scripts/build_host_protoc.sh --other-flags -DCMAKE_OSX_ARCHITECTURES=\"x86_64;arm64\" -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY -DCMAKE_C_COMPILER_WORKS=1 -DCMAKE_CXX_COMPILER_WORKS=1"
+      "./scripts/build_host_protoc.sh --other-flags -DCMAKE_OSX_ARCHITECTURES=\"arm64\" -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY -DCMAKE_C_COMPILER_WORKS=1 -DCMAKE_CXX_COMPILER_WORKS=1"
   )
   # We write to a temp scriptfile because CMake COMMAND dislikes double quotes
   # in commands
