@@ -519,17 +519,18 @@ if(${USE_ITT})
   )
 endif()
 
-if(NOT INTERN_BUILD_MOBILE AND NOT BUILD_LITE_INTERPRETER)
+#UG if(NOT INTERN_BUILD_MOBILE AND NOT BUILD_LITE_INTERPRETER)
+if( NOT BUILD_LITE_INTERPRETER)
   list(APPEND TORCH_SRCS
     ${TORCH_SRC_DIR}/csrc/api/src/jit.cpp
     ${TORCH_SRC_DIR}/csrc/jit/mobile/compatibility/backport.cpp
     ${TORCH_SRC_DIR}/csrc/jit/mobile/compatibility/backport_manager.cpp
-    ${TORCH_SRC_DIR}/csrc/jit/serialization/onnx.cpp
-    ${TORCH_SRC_DIR}/csrc/jit/serialization/export.cpp
+    #UG ${TORCH_SRC_DIR}/csrc/jit/serialization/onnx.cpp
+    #UG ${TORCH_SRC_DIR}/csrc/jit/serialization/export.cpp
     ${TORCH_SRC_DIR}/csrc/jit/serialization/export_bytecode.cpp
     ${TORCH_SRC_DIR}/csrc/jit/serialization/export_module.cpp
     ${TORCH_SRC_DIR}/csrc/jit/serialization/flatbuffer_serializer.cpp
-    ${TORCH_SRC_DIR}/csrc/jit/codegen/fuser/cpu/fused_kernel.cpp
+    #UG ${TORCH_SRC_DIR}/csrc/jit/codegen/fuser/cpu/fused_kernel.cpp
     ${TORCH_SRC_DIR}/csrc/jit/api/module_save.cpp
     ${TORCH_SRC_DIR}/csrc/utils/byte_order.cpp
   )

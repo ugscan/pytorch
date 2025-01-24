@@ -483,7 +483,7 @@ libtorch_core_sources = sorted(
     torch_unpickler_common +
     core_sources_full +
     core_trainer_sources +
-    inductor_core_resources +
+    #UG inductor_core_resources +
     libtorch_profiler_sources +
     lazy_tensor_core_sources,
 )
